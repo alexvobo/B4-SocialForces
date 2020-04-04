@@ -33,7 +33,8 @@ public class Agent : MonoBehaviour
         if (path.Count > 1 && Vector3.Distance(transform.position, path[0]) < 1.1f)
         {
             path.RemoveAt(0);
-        } else if (path.Count == 1 && Vector3.Distance(transform.position, path[0]) < 2f)
+        }
+        else if (path.Count == 1 && Vector3.Distance(transform.position, path[0]) < 2f)
         {
             path.RemoveAt(0);
 
@@ -93,20 +94,24 @@ public class Agent : MonoBehaviour
 
     private Vector3 ComputeForce()
     {
-        var force = Vector3.zero;
+        var force = CalculateGoalForce();
 
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
-        } else
+        }
+        else
         {
             return Vector3.zero;
         }
     }
-    
+
     private Vector3 CalculateGoalForce()
     {
-        return Vector3.zero;
+        var goalDir = Vector3.Normalize(nma.destination - transform.position);
+
+        var prefForce = rb.mass * (nma.desiredVelocity.sqrMagnitude * goalDir - rb.velocity) / Time.deltaTime;
+        return prefForce;
     }
 
     private Vector3 CalculateAgentForce()
@@ -131,7 +136,7 @@ public class Agent : MonoBehaviour
     {
 
     }
-    
+
     public void OnTriggerExit(Collider other)
     {
 
@@ -139,12 +144,12 @@ public class Agent : MonoBehaviour
 
     public void OnCollisionEnter(Collision collision)
     {
-        
+
     }
 
     public void OnCollisionExit(Collision collision)
     {
-        
+
     }
 
     #endregion
