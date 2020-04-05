@@ -81,7 +81,7 @@ public class Agent : MonoBehaviour
         path = nmPath.corners.Skip(1).ToList();
         //path = new List<Vector3>() { destination };
         //nma.SetDestination(destination);
-        nma.enabled = false;
+        //nma.enabled = false;
     }
 
     public Vector3 GetVelocity()
@@ -92,10 +92,34 @@ public class Agent : MonoBehaviour
     #endregion
 
     #region Incomplete Functions
-
+   /* private Vector3 CalculateWallRepulsion(float dt)
+    {
+        //helper fxn
+        return Vector3.zero;
+    }
+    private Vector3 CalculateAgentRepulsion(float dt)
+    {
+        //helper fxn
+        return Vector3.zero;
+    }
+    private Vector3 CalculateRepulsionForce(float dt)
+    {
+        //helper fxn
+        return CalculateWallForce() + CalculateAgentRepulsion(dt);
+    }
+    private Vector3 CalculateProximityForce(float dt)
+    {
+        //helper fxn
+        return Vector3.zero;
+    }
+    private Vector3 CalculateSlidingForce(float dt)
+    {
+        //helper fxn
+        return Vector3.zero;
+    }*/
     private Vector3 ComputeForce()
     {
-        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce();
+        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce(); //subject to change
 
         if (force != Vector3.zero)
         {
@@ -123,7 +147,7 @@ public class Agent : MonoBehaviour
         var repulsionForce = Vector3.zero;
         var slidingForce = Vector3.zero;
 
-
+        // 1 is placeholder, should be vector facing away from agent
         agentForce = (proximityForce + repulsionForce) * 1 + slidingForce;
         return agentForce;
     }
@@ -158,12 +182,18 @@ public class Agent : MonoBehaviour
 
     public void OnCollisionEnter(Collision collision)
     {
-
+        if (collision.gameObject.name.Contains("Wall"))
+        {
+            //collision with walll
+        }
     }
 
     public void OnCollisionExit(Collision collision)
     {
-
+        if (collision.gameObject.name.Contains("Wall"))
+        {
+            //collision with walll
+        }
     }
 
     #endregion

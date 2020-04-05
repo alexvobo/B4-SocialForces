@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
-        lookSpeed = 10.0f;
+        lookSpeed = 7.0f;
         mouseX = mouseY = 0.0f;
         moveSpeed = 10;
         am = GameObject.FindGameObjectWithTag("Manager").GetComponent<AgentManager>();
