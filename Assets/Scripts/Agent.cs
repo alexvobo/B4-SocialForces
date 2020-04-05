@@ -16,6 +16,7 @@ public class Agent : MonoBehaviour
 
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
 
+
     void Start()
     {
         path = new List<Vector3>();
@@ -59,7 +60,7 @@ public class Agent : MonoBehaviour
             }
         }
 
-        if (false)
+        if (true)
         {
             foreach (var neighbor in perceivedNeighbors)
             {
@@ -94,7 +95,7 @@ public class Agent : MonoBehaviour
 
     private Vector3 ComputeForce()
     {
-        var force = CalculateGoalForce();
+        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce();
 
         if (force != Vector3.zero)
         {
@@ -110,13 +111,21 @@ public class Agent : MonoBehaviour
     {
         var goalDir = Vector3.Normalize(nma.destination - transform.position);
 
-        var prefForce = rb.mass * (nma.desiredVelocity.sqrMagnitude * goalDir - rb.velocity) / Time.deltaTime;
+        var prefForce = (nma.desiredVelocity.sqrMagnitude * goalDir - GetVelocity()) / Time.deltaTime;
+
         return prefForce;
     }
 
     private Vector3 CalculateAgentForce()
     {
-        return Vector3.zero;
+        var agentForce = Vector3.zero;
+        var proximityForce = Vector3.zero;
+        var repulsionForce = Vector3.zero;
+        var slidingForce = Vector3.zero;
+
+
+        agentForce = (proximityForce + repulsionForce) * 1 + slidingForce;
+        return agentForce;
     }
 
     private Vector3 CalculateWallForce()
@@ -134,12 +143,17 @@ public class Agent : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-
+        if (other.gameObject.name.Contains("Agent"))
+        {
+            //agent detected
+            perceivedNeighbors.Add(other.gameObject);
+            // Debug.Log( name +" Detected " + other.name);
+        }
     }
 
     public void OnTriggerExit(Collider other)
     {
-
+        perceivedNeighbors.Remove(other.gameObject);
     }
 
     public void OnCollisionEnter(Collision collision)

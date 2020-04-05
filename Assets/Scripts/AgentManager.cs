@@ -125,6 +125,7 @@ public class AgentManager : MonoBehaviour
 
     public void SetAgentDestinations(Vector3 destination)
     {
+        this.destination = destination; //<----
         NavMeshHit hit;
         NavMesh.SamplePosition(destination, out hit, 10, NavMesh.AllAreas);
         foreach (var agent in agents)

@@ -9,6 +9,7 @@ public class CameraController : MonoBehaviour
     private float lookSpeed, mouseX, mouseY;
     public float moveSpeed;
     private AgentManager am;
+
     void Start()
     {
         lookSpeed = 10.0f;
@@ -20,18 +21,19 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        movement();
+        Movement();
         DetectObjects();
     }
     // Camera free-look, moves where camera is pointing
-    private void movement()
+    private void Movement()
     {
-        mouseX += lookSpeed * Input.GetAxis("Mouse X");
-        mouseY -= lookSpeed * Input.GetAxis("Mouse Y");
 
-        transform.eulerAngles = new Vector3(mouseY, mouseX, 0.0f);
+        mouseX = (Input.mousePosition.x / Screen.width) - 0.5f;
+        mouseY = (Input.mousePosition.y / Screen.height) - 0.5f;
+        transform.localRotation = Quaternion.Euler(new Vector4(-1f * (mouseY * 180f), mouseX * 360f, transform.localRotation.z));
 
         Vector3 input = Quaternion.Euler(0, transform.eulerAngles.y, 0) * new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical"));
+
 
         transform.position += input * Time.deltaTime * moveSpeed;
 
@@ -56,7 +58,13 @@ public class CameraController : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 1500))
             {
-                am.SetAgentDestinations(hit.point);
+                if (hit.transform)
+                {
+                    Debug.DrawRay(hit.point, Vector3.up, Color.red, 5f);
+                    am.SetAgentDestinations(hit.point);
+
+                }
+
             }
 
         }
