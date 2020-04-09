@@ -15,8 +15,7 @@ public class Agent : MonoBehaviour
     private Rigidbody rb;
 
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
-
-    private HashSet<GameObject> collidingNeighbors = new HashSet<GameObject>();
+    private Dictionary<GameObject,Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
     void Start()
     {
         path = new List<Vector3>();
@@ -48,7 +47,7 @@ public class Agent : MonoBehaviour
 
         #region Visualization
 
-        if (false)
+        if (true)
         {
             if (path.Count > 0)
             {
@@ -81,7 +80,7 @@ public class Agent : MonoBehaviour
         path = nmPath.corners.Skip(1).ToList();
         //path = new List<Vector3>() { destination };
         //nma.SetDestination(destination);
-        nma.enabled = false;
+        //nma.enabled = false;
     }
 
     public Vector3 GetVelocity()
@@ -95,7 +94,7 @@ public class Agent : MonoBehaviour
 
     private Vector3 ComputeForce()
     {
-        var force = CalculateGoalForce() + CalculateAgentForce(); //subject to change
+        var force = CalculateGoalForce(2) + CalculateAgentForce() + CalculateWallForce();
 
         if (force != Vector3.zero)
         {
@@ -107,10 +106,10 @@ public class Agent : MonoBehaviour
         }
     }
 
-    private Vector3 CalculateGoalForce()
+    private Vector3 CalculateGoalForce(float maxSpeed)
     {
-        var goalDir = Vector3.Normalize(nma.destination - transform.position);
-        var goalForce = rb.mass * (Parameters.maxSpeed * goalDir - GetVelocity()) / Time.deltaTime;
+        var goalDir = (nma.destination - transform.position).normalized;
+        var goalForce = rb.mass * (maxSpeed * goalDir - GetVelocity()) / Time.deltaTime;
         return goalForce;
     }
 
@@ -145,7 +144,30 @@ public class Agent : MonoBehaviour
 
     private Vector3 CalculateWallForce()
     {
-        return Vector3.zero;
+        var A = Parameters.WALL_A;
+        var B = Parameters.WALL_B;
+        var k = Parameters.WALL_k;
+        var kappa = Parameters.WALL_Kappa;
+
+        var wallForce = Vector3.zero;
+
+        foreach (var g in perceivedWalls)
+        {
+
+            var wall = g;
+            var contactPoint = g.Value;
+
+            // var dir = (transform.position - wall.transform.position).normalized;
+            var dir = (transform.position - contactPoint).normalized;
+            var overlap = radius - Vector3.Distance(transform.position, contactPoint);
+
+            wallForce += A * Mathf.Exp(overlap / B) * dir;
+            wallForce += k * (overlap > 0f ? overlap : 0) * dir;
+
+            var tangent = Vector3.Cross(Vector3.up, dir);
+            wallForce -= kappa * (overlap > 0f ? overlap : 0) * Vector3.Dot(GetVelocity(), tangent) * tangent;
+        }
+        return wallForce;
     }
 
     public void ApplyForce()
@@ -181,7 +203,7 @@ public class Agent : MonoBehaviour
     {
         if (WallManager.IsWall(collision.gameObject))
         {
-
+            perceivedWalls.Add(collision.gameObject,collision.contacts[0].point);
         }
     }
 
@@ -189,6 +211,7 @@ public class Agent : MonoBehaviour
     {
         if (WallManager.IsWall(collision.gameObject))
         {
+            perceivedWalls.Remove(collision.gameObject);
 
         }
     }

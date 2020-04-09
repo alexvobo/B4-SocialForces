@@ -15,7 +15,7 @@ public class AgentManager : MonoBehaviour
     private GameObject agentParent;
     private Vector3 destination;
 
-    public const float UPDATE_RATE = 0.0f;
+    public const float UPDATE_RATE = 0f;
     private const int PATHFINDING_FRAME_SKIP = 25;
 
     #region Unity Functions
@@ -126,7 +126,7 @@ public class AgentManager : MonoBehaviour
 
     public void SetAgentDestinations(Vector3 destination)
     {
-        this.destination = destination; //<----
+        //this.destination = destination;
         NavMeshHit hit;
         NavMesh.SamplePosition(destination, out hit, 10, NavMesh.AllAreas);
         foreach (var agent in agents)
