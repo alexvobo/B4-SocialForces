@@ -16,7 +16,7 @@ public class Agent : MonoBehaviour
 
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
 
-
+    private HashSet<GameObject> collidingNeighbors = new HashSet<GameObject>();
     void Start()
     {
         path = new List<Vector3>();
@@ -81,7 +81,7 @@ public class Agent : MonoBehaviour
         path = nmPath.corners.Skip(1).ToList();
         //path = new List<Vector3>() { destination };
         //nma.SetDestination(destination);
-        //nma.enabled = false;
+        nma.enabled = false;
     }
 
     public Vector3 GetVelocity()
@@ -92,34 +92,10 @@ public class Agent : MonoBehaviour
     #endregion
 
     #region Incomplete Functions
-   /* private Vector3 CalculateWallRepulsion(float dt)
-    {
-        //helper fxn
-        return Vector3.zero;
-    }
-    private Vector3 CalculateAgentRepulsion(float dt)
-    {
-        //helper fxn
-        return Vector3.zero;
-    }
-    private Vector3 CalculateRepulsionForce(float dt)
-    {
-        //helper fxn
-        return CalculateWallForce() + CalculateAgentRepulsion(dt);
-    }
-    private Vector3 CalculateProximityForce(float dt)
-    {
-        //helper fxn
-        return Vector3.zero;
-    }
-    private Vector3 CalculateSlidingForce(float dt)
-    {
-        //helper fxn
-        return Vector3.zero;
-    }*/
+
     private Vector3 ComputeForce()
     {
-        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce(); //subject to change
+        var force = CalculateGoalForce() + CalculateAgentForce(); //subject to change
 
         if (force != Vector3.zero)
         {
@@ -134,21 +110,36 @@ public class Agent : MonoBehaviour
     private Vector3 CalculateGoalForce()
     {
         var goalDir = Vector3.Normalize(nma.destination - transform.position);
-
-        var prefForce = (nma.desiredVelocity.sqrMagnitude * goalDir - GetVelocity()) / Time.deltaTime;
-
-        return prefForce;
+        var goalForce = rb.mass * (Parameters.maxSpeed * goalDir - GetVelocity()) / Time.deltaTime;
+        return goalForce;
     }
 
     private Vector3 CalculateAgentForce()
     {
-        var agentForce = Vector3.zero;
-        var proximityForce = Vector3.zero;
-        var repulsionForce = Vector3.zero;
-        var slidingForce = Vector3.zero;
+        var A = Parameters.A;
+        var B = Parameters.B;
+        var k = Parameters.k;
+        var kappa = Parameters.Kappa;
 
-        // 1 is placeholder, should be vector facing away from agent
-        agentForce = (proximityForce + repulsionForce) * 1 + slidingForce;
+        var agentForce = Vector3.zero;
+
+        foreach (var j in perceivedNeighbors)
+        {
+            if (!AgentManager.IsAgent(j))
+            {
+                continue;
+            }
+            var neighbor = AgentManager.agentsObjs[j];
+
+            var dir = (transform.position - neighbor.transform.position).normalized;
+            var overlap = (radius + neighbor.radius) - Vector3.Distance(transform.position, neighbor.transform.position);
+
+            agentForce += A * Mathf.Exp(overlap / B) * dir;
+            agentForce += k * (overlap > 0f ? overlap : 0) * dir;
+
+            var tangent = Vector3.Cross(Vector3.up, dir);
+            agentForce += kappa * (overlap > 0f ? overlap : 0) * Vector3.Dot(rb.velocity - neighbor.GetVelocity(), tangent) * tangent;
+        }
         return agentForce;
     }
 
@@ -167,7 +158,7 @@ public class Agent : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.name.Contains("Agent"))
+        if (AgentManager.IsAgent(other.gameObject))
         {
             //agent detected
             perceivedNeighbors.Add(other.gameObject);
@@ -177,22 +168,28 @@ public class Agent : MonoBehaviour
 
     public void OnTriggerExit(Collider other)
     {
-        perceivedNeighbors.Remove(other.gameObject);
+        if (AgentManager.IsAgent(other.gameObject))
+        {
+            //agent detected
+            perceivedNeighbors.Remove(other.gameObject);
+
+            // Debug.Log( name +" Detected " + other.name);
+        }
     }
 
     public void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.name.Contains("Wall"))
+        if (WallManager.IsWall(collision.gameObject))
         {
-            //collision with walll
+
         }
     }
 
     public void OnCollisionExit(Collision collision)
     {
-        if (collision.gameObject.name.Contains("Wall"))
+        if (WallManager.IsWall(collision.gameObject))
         {
-            //collision with walll
+
         }
     }
 

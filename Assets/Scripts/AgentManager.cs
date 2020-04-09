@@ -62,6 +62,7 @@ public class AgentManager : MonoBehaviour
                 if (Physics.Raycast(point, dir, out rcHit))
                 {
                     point = rcHit.point;
+                    SetAgentDestinations(point);
                 }
             } else
             {
