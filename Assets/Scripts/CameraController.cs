@@ -22,7 +22,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         Movement();
-        //DetectObjects();
+        DetectObjects();
     }
     // Camera free-look, moves where camera is pointing
     private void Movement()

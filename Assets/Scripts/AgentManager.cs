@@ -62,7 +62,7 @@ public class AgentManager : MonoBehaviour
                 if (Physics.Raycast(point, dir, out rcHit))
                 {
                     point = rcHit.point;
-                    SetAgentDestinations(point);
+                    //SetAgentDestinations(point);
                 }
             } else
             {
@@ -126,7 +126,7 @@ public class AgentManager : MonoBehaviour
 
     public void SetAgentDestinations(Vector3 destination)
     {
-        //this.destination = destination;
+        this.destination = destination;
         NavMeshHit hit;
         NavMesh.SamplePosition(destination, out hit, 10, NavMesh.AllAreas);
         foreach (var agent in agents)

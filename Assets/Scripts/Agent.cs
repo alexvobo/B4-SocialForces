@@ -15,7 +15,7 @@ public class Agent : MonoBehaviour
     private Rigidbody rb;
 
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
-    private Dictionary<GameObject,Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
+    private Dictionary<GameObject, Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
     void Start()
     {
         path = new List<Vector3>();
@@ -59,7 +59,7 @@ public class Agent : MonoBehaviour
             }
         }
 
-        if (true)
+        if (false)
         {
             foreach (var neighbor in perceivedNeighbors)
             {
@@ -94,8 +94,8 @@ public class Agent : MonoBehaviour
 
     private Vector3 ComputeForce()
     {
-        var force = CalculateGoalForce(2) + CalculateAgentForce() + CalculateWallForce();
 
+        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce();
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
@@ -106,10 +106,11 @@ public class Agent : MonoBehaviour
         }
     }
 
-    private Vector3 CalculateGoalForce(float maxSpeed)
+    private Vector3 CalculateGoalForce()
     {
+        var T = Parameters.T;
         var goalDir = (nma.destination - transform.position).normalized;
-        var goalForce = rb.mass * (maxSpeed * goalDir - GetVelocity()) / Time.deltaTime;
+        var goalForce = rb.mass*(Parameters.maxSpeed * goalDir - GetVelocity()) / T;
         return goalForce;
     }
 
@@ -164,6 +165,7 @@ public class Agent : MonoBehaviour
             wallForce += A * Mathf.Exp(overlap / B) * dir;
             wallForce += k * (overlap > 0f ? overlap : 0) * dir;
 
+            //var tangent = Vector3.Cross(Vector3.up, dir);
             var tangent = Vector3.Cross(Vector3.up, dir);
             wallForce -= kappa * (overlap > 0f ? overlap : 0) * Vector3.Dot(GetVelocity(), tangent) * tangent;
         }
@@ -203,7 +205,7 @@ public class Agent : MonoBehaviour
     {
         if (WallManager.IsWall(collision.gameObject))
         {
-            perceivedWalls.Add(collision.gameObject,collision.contacts[0].point);
+            perceivedWalls.Add(collision.gameObject, collision.contacts[0].point);
         }
     }
 
