@@ -13,6 +13,7 @@ public class Agent : MonoBehaviour
     private List<Vector3> path;
     private NavMeshAgent nma;
     private Rigidbody rb;
+    private Vector3 dest;
 
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
     private Dictionary<GameObject, Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
@@ -71,7 +72,10 @@ public class Agent : MonoBehaviour
     }
 
     #region Public Functions
-
+    public void setDest(Vector3 t)
+    {
+        dest = t;
+    }
     public void ComputePath(Vector3 destination)
     {
         nma.enabled = true;
@@ -95,7 +99,7 @@ public class Agent : MonoBehaviour
     private Vector3 ComputeForce()
     {
 
-        var force = CalculateGoalForce() + CalculateAgentForce() + CalculateWallForce();
+        var force = CalculateGoalForce(3) + CalculateAgentForce() + CalculateWallForce();
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
@@ -106,11 +110,11 @@ public class Agent : MonoBehaviour
         }
     }
 
-    private Vector3 CalculateGoalForce()
+    private Vector3 CalculateGoalForce(float maxSpeed)
     {
         var T = Parameters.T;
-        var goalDir = (nma.destination - transform.position).normalized;
-        var goalForce = rb.mass*(Parameters.maxSpeed * goalDir - GetVelocity()) / T;
+        var goalDir = (this.dest - transform.position).normalized;
+        var goalForce = rb.mass*(maxSpeed * goalDir - GetVelocity()) / T;
         return goalForce;
     }
 

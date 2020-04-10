@@ -97,7 +97,7 @@ public class AgentManager : MonoBehaviour
         {
             if (iterations % PATHFINDING_FRAME_SKIP == 0)
             {
-                SetAgentDestinations(destination);
+                //SetAgentDestinations(destination);
             }
 
             foreach (var agent in agents)
@@ -126,12 +126,13 @@ public class AgentManager : MonoBehaviour
 
     public void SetAgentDestinations(Vector3 destination)
     {
-        this.destination = destination;
+
         NavMeshHit hit;
         NavMesh.SamplePosition(destination, out hit, 10, NavMesh.AllAreas);
         foreach (var agent in agents)
         {
             agent.ComputePath(hit.position);
+            agent.setDest(destination);
         }
     }
 
