@@ -61,7 +61,7 @@ public class CameraController : MonoBehaviour
                 if (hit.transform)
                 {
                     Debug.DrawRay(hit.point, Vector3.up, Color.red, 5f);
-                    am.SetAgentDestinations(hit.point);
+                    //am.SetAgentDestinations(hit.point);
 
                 }
 

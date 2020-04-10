@@ -1,0 +1,14 @@
+goal force - 
+	Given the desired velocity, current velocity, direction from the agent's current position to the goal, and a constant T, we achieve a steering behavior
+	by re-calculating the direction in which we need to move instead of the agents following a beeline.
+proximity force -
+	The proximity force is responsible for exponentially reducing the force when agents are far away from eachother 
+	and exponentially increasing the force the closer agents get to eachother. We couple this with repulsion force to push nearby agents away from each other.
+repulsion force - 
+	The repulsion force is an "explosive" force, where k*g(Rij-Dij) will become a really large number when the agents are overlapping and 0 otherwise.
+	The goal of the repulsion force is to push agents away when they begin to stack. The more they overlap the bigger the force.
+	Both the proximity force and repulsion force are applied in the same direction.
+sliding friction force -
+	The goal of sliding friction force is to push an agent i away from an agent j tangentially to avoid a collision. 
+	The magnitude of this force depends on the direction that the velocities are applied, so agents traveling in opposite direction will experience a greater force.
+	Similar to repulsion force, the farther the agents are away from each other the smaller the force, and it will increase as agents get closer to each other.

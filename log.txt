@@ -1,0 +1,11 @@
+92e0ca1 was Alexsandr Vobornov, 39 minutes ago, message: Agents now move properly, commented out setDestination in run() function and changed maxspeed parameter. Repulsive  force is still really strong when enough of them group together but that can be addressed later.
+971511c was Alexsandr Vobornov, 55 minutes ago, message: Fixed calcGoalForce
+c32846c was Alexsandr Vobornov, 21 hours ago, message: Completed computeWallForce()!
+fc6c826 was Alexsandr Vobornov, 22 hours ago, message: Added ComputeAgentForce(). Agents refuse are frozen for some reason.
+2f4a0cf was Alexsandr Vobornov, 5 days ago, message: Added skeleton functions, layout for colliding with walls
+a4d4342 was Alexsandr Vobornov, 5 days ago, message: Added destination updating in setagentdestination. Agents now know their perceived neighbors by checking trigger enter/exit
+6bdd96b was Alexsandr Vobornov, 6 days ago, message: Added freelook camera. Started working on goal force
+382d5da was Alexsandr Vobornov, 6 days ago, message: Updated b4
+67490e3 was Samuel S. Sohn, 6 days ago, message: added parameters and visualizations
+9eefd81 was Samuel S. Sohn, 13 days ago, message: ready for release
+5288475 was Samuel S. Sohn, 13 days ago, message: init commit

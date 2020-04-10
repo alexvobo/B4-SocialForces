@@ -14,7 +14,7 @@ public class AgentManager : MonoBehaviour
     private static List<Agent> agents = new List<Agent>();
     private GameObject agentParent;
     private Vector3 destination;
-
+    public AgentManager instance;
     public const float UPDATE_RATE = 0f;
     private const int PATHFINDING_FRAME_SKIP = 25;
 
@@ -37,7 +37,7 @@ public class AgentManager : MonoBehaviour
             agent.name = "Agent " + i;
             agent.transform.parent = agentParent.transform;
             var agentScript = agent.GetComponent<Agent>();
-            agentScript.radius = 0.3f;// Random.Range(0.2f, 0.6f);
+            agentScript.radius = 0.2f;// Random.Range(0.2f, 0.6f);
             agentScript.mass = 1;
             agentScript.perceptionRadius = 3;
 
@@ -47,11 +47,11 @@ public class AgentManager : MonoBehaviour
 
         StartCoroutine(Run());
     }
-    
+
     void Update()
     {
         #region Visualization
-        
+
         if (Input.GetMouseButtonDown(0))
         {
             if (true)
@@ -62,9 +62,11 @@ public class AgentManager : MonoBehaviour
                 if (Physics.Raycast(point, dir, out rcHit))
                 {
                     point = rcHit.point;
-                    //SetAgentDestinations(point);
+                    this.destination = point;
+                    SetAgentDestinations(point);
                 }
-            } else
+            }
+            else
             {
                 var randPos = new Vector3((Random.value - 0.5f) * agentSpawnRadius, 0, (Random.value - 0.5f) * agentSpawnRadius);
 
@@ -97,7 +99,7 @@ public class AgentManager : MonoBehaviour
         {
             if (iterations % PATHFINDING_FRAME_SKIP == 0)
             {
-                //SetAgentDestinations(destination);
+                SetAgentDestinations(destination);
             }
 
             foreach (var agent in agents)
@@ -108,7 +110,8 @@ public class AgentManager : MonoBehaviour
             if (UPDATE_RATE == 0)
             {
                 yield return null;
-            } else
+            }
+            else
             {
                 yield return new WaitForSeconds(UPDATE_RATE);
             }
@@ -132,7 +135,7 @@ public class AgentManager : MonoBehaviour
         foreach (var agent in agents)
         {
             agent.ComputePath(hit.position);
-            agent.setDest(destination);
+            //agent.setDest(destination);
         }
     }
 
@@ -156,12 +159,13 @@ public class AgentManager : MonoBehaviour
 
     #region Utility Classes
 
-    private class Tuple<K,V>
+    private class Tuple<K, V>
     {
         public K Item1;
         public V Item2;
 
-        public Tuple(K k, V v) {
+        public Tuple(K k, V v)
+        {
             Item1 = k;
             Item2 = v;
         }

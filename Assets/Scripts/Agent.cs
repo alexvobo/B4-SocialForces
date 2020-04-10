@@ -86,7 +86,84 @@ public class Agent : MonoBehaviour
         //nma.SetDestination(destination);
         //nma.enabled = false;
     }
+    public Vector3 ComputeWallFollowerForce()
+    {
+        //disregard all forces except maybe agent repulsion
+        var force = Vector3.zero;
 
+        
+        return force;
+    }
+    public Vector3 CalculatePursueEvade()
+    {
+        var agentForce = Vector3.zero;
+        var speed = 0.1f;
+        //AgentManager.destination  ... 
+        GetComponent<SphereCollider>().radius = 10;
+
+        bool isEvader = (int.Parse(name.Split(' ')[1]) % 2) == 0;
+        if (isEvader)
+        {
+            Debug.DrawLine(transform.position, transform.position + Vector3.up * 3, Color.green, 0.1f);
+            foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
+            {
+
+                var neighbor = AgentManager.agentsObjs[n];
+                var dir = (transform.position - neighbor.transform.position).normalized;
+                var overlap = (radius + neighbor.radius) - Vector3.Distance(transform.position, n.transform.position);
+
+                var otherIsEvader = (int.Parse(name.Split(' ')[1]) % 2) == 0;
+                if (isEvader == otherIsEvader)
+                {
+                    agentForce += Mathf.Exp(overlap) * dir * speed;
+                }
+                else
+                {
+                    agentForce += dir * speed;
+                    var tangent = Vector3.Cross(Vector3.up, dir) * speed;
+                    agentForce += tangent;
+                }
+            }
+        }
+        else
+        {
+            Debug.DrawLine(transform.position, transform.position + Vector3.up * 3, Color.red, 0.1f);
+            foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
+            {
+
+                var neighbor = AgentManager.agentsObjs[n];
+                var dir = (transform.position - neighbor.transform.position).normalized;
+                var overlap = (radius + neighbor.radius) - Vector3.Distance(transform.position, n.transform.position);
+
+                var otherIsEvader = (int.Parse(name.Split(' ')[1]) % 2) == 0;
+                if (isEvader == otherIsEvader)
+                {
+                    agentForce += Mathf.Exp(overlap) * dir * speed;
+                }
+                else
+                {
+                    agentForce += dir * speed;
+                }
+            }
+
+        }
+        return agentForce;
+    }
+    public Vector3 CalculateSpiralForce()
+    {
+        //No obstacles
+        //Compute tangent to origin for several agents that will pull agents.
+        var force = Vector3.zero;
+
+        var centerdir = Vector3.zero - transform.position;
+        if (centerdir.magnitude > 0)
+        {
+            force += Vector3.Cross(Vector3.up, centerdir).normalized * .01f;
+            //force+=centerDir.normalized*.0075f;
+        }
+
+        return force;
+    }
     public Vector3 GetVelocity()
     {
         return rb.velocity;
@@ -113,8 +190,16 @@ public class Agent : MonoBehaviour
     private Vector3 CalculateGoalForce(float maxSpeed)
     {
         var T = Parameters.T;
-        var goalDir = (this.dest - transform.position).normalized;
-        var goalForce = rb.mass*(maxSpeed * goalDir - GetVelocity()) / T;
+        if (path.Count == 0)
+        {
+            return Vector3.zero;
+        }
+        var temp = path[0] - transform.position;
+        var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, maxSpeed);
+        /*   var goalDir = (this.dest - transform.position).normalized;
+           var goalForce = rb.mass*(maxSpeed * goalDir - GetVelocity()) / T;
+           return goalForce;*/
+        var goalForce = (desiredVel - GetVelocity()) / T;
         return goalForce;
     }
 
@@ -127,16 +212,16 @@ public class Agent : MonoBehaviour
 
         var agentForce = Vector3.zero;
 
-        foreach (var j in perceivedNeighbors)
+        foreach (var n in perceivedNeighbors)
         {
-            if (!AgentManager.IsAgent(j))
+            if (!AgentManager.IsAgent(n))
             {
                 continue;
             }
-            var neighbor = AgentManager.agentsObjs[j];
+            var neighbor = AgentManager.agentsObjs[n];
 
             var dir = (transform.position - neighbor.transform.position).normalized;
-            var overlap = (radius + neighbor.radius) - Vector3.Distance(transform.position, neighbor.transform.position);
+            var overlap = (radius + neighbor.radius) - Vector3.Distance(transform.position, n.transform.position);
 
             agentForce += A * Mathf.Exp(overlap / B) * dir;
             agentForce += k * (overlap > 0f ? overlap : 0) * dir;
@@ -161,7 +246,7 @@ public class Agent : MonoBehaviour
 
             var wall = g;
             var contactPoint = g.Value;
-
+            //abs position or relative position of agent to wall NOT contact point
             // var dir = (transform.position - wall.transform.position).normalized;
             var dir = (transform.position - contactPoint).normalized;
             var overlap = radius - Vector3.Distance(transform.position, contactPoint);
