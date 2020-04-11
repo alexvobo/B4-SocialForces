@@ -10,6 +10,7 @@ public class AgentManager : MonoBehaviour
     public float agentSpawnRadius = 20;
     public GameObject agentPrefab;
     public static Dictionary<GameObject, Agent> agentsObjs = new Dictionary<GameObject, Agent>();
+    public static List<Agent> leader = new List<Agent>();
 
     private static List<Agent> agents = new List<Agent>();
     private GameObject agentParent;
@@ -43,6 +44,12 @@ public class AgentManager : MonoBehaviour
 
             agents.Add(agentScript);
             agentsObjs.Add(agent, agentScript);
+
+            bool isLeader = (int.Parse(agentScript.name.Split(' ')[1])) == 0;
+            if (isLeader)
+            {
+              leader.Add(agentScript);
+            }
         }
 
         StartCoroutine(Run());

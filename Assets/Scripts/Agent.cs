@@ -91,14 +91,69 @@ public class Agent : MonoBehaviour
         //disregard all forces except maybe agent repulsion
         var force = Vector3.zero;
 
-        
+
         return force;
     }
+
+
+    public Vector3 CalculateFollowLeader()
+    {
+        var agentForce = Vector3.zero;
+        var speed = 0.1f;
+
+        GetComponent<SphereCollider>().radius = 10;
+
+        bool isLeader = (int.Parse(name.Split(' ')[1])) == 0;
+        if (isLeader)
+        {
+            Debug.DrawLine(transform.position, transform.position + Vector3.up * 3, Color.green, 0.1f);
+
+            var T = Parameters.T;
+            if (path.Count == 0)
+            {
+                return Vector3.zero;
+            }
+            var temp = path[0] - transform.position;
+            var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+
+            agentForce = (desiredVel - GetVelocity()) / T;
+
+        }
+        else
+        {
+            Debug.DrawLine(transform.position, transform.position + Vector3.up * 3, Color.red, 0.1f);
+
+            var leaderPosition = AgentManager.leader[0].transform.position;
+
+            foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
+            {
+              if(!isLeader)
+              {
+                var T = Parameters.T;
+                if (path.Count == 0)
+                {
+                    return Vector3.zero;
+                }
+
+                //making sure agents are not too close to the leader
+                if(Vector3.Distance(leaderPosition, transform.position) > 3)
+                {
+                  var temp = leaderPosition - transform.position;
+                  var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+
+                  agentForce = (desiredVel - GetVelocity()) / T;
+                }
+              }
+            }
+        }
+        return agentForce;
+    }
+
     public Vector3 CalculatePursueEvade()
     {
         var agentForce = Vector3.zero;
         var speed = 0.1f;
-        //AgentManager.destination  ... 
+        //AgentManager.destination  ...
         GetComponent<SphereCollider>().radius = 10;
 
         bool isEvader = (int.Parse(name.Split(' ')[1]) % 2) == 0;
@@ -176,7 +231,7 @@ public class Agent : MonoBehaviour
     private Vector3 ComputeForce()
     {
 
-        var force = CalculateGoalForce(3) + CalculateAgentForce() + CalculateWallForce();
+        var force = CalculateFollowLeader();
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
