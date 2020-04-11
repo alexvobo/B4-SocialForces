@@ -95,6 +95,11 @@ public class Agent : MonoBehaviour
         return force;
     }
 
+    public Vector3 CaculateCrowdFollow() {
+
+      return Vector3.zero;
+    }
+
 
     public Vector3 CalculateFollowLeader()
     {
@@ -130,10 +135,6 @@ public class Agent : MonoBehaviour
               if(!isLeader)
               {
                 var T = Parameters.T;
-                if (path.Count == 0)
-                {
-                    return Vector3.zero;
-                }
 
                 //making sure agents are not too close to the leader
                 if(Vector3.Distance(leaderPosition, transform.position) > 3)
