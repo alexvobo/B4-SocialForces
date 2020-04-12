@@ -15,9 +15,6 @@ public class Agent : MonoBehaviour
     private Rigidbody rb;
     private Vector3 dest;
 
-    Dictionary<float, GameObject> distanceDic = new Dictionary<float, GameObject> ();
-
-
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
     private Dictionary<GameObject, Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
     void Start()
@@ -34,6 +31,7 @@ public class Agent : MonoBehaviour
 
     private void Update()
     {
+
         if (path.Count > 1 && Vector3.Distance(transform.position, path[0]) < 1.1f)
         {
             path.RemoveAt(0);
@@ -44,14 +42,14 @@ public class Agent : MonoBehaviour
 
             if (path.Count == 0)
             {
-              //  gameObject.SetActive(false);
-              //  AgentManager.RemoveAgent(gameObject);
+                //  gameObject.SetActive(false);
+                //  AgentManager.RemoveAgent(gameObject);
             }
         }
 
         #region Visualization
 
-        if (true)
+        if (false)
         {
             if (path.Count > 0)
             {
@@ -89,58 +87,48 @@ public class Agent : MonoBehaviour
         //nma.SetDestination(destination);
         //nma.enabled = false;
     }
-    public Vector3 ComputeWallFollowerForce()
-    {
-        //disregard all forces except maybe agent repulsion
-        var force = Vector3.zero;
-
-
-        return force;
-    }
 
     //
-    public Vector3 CaculateCrowdFollow() {
+    public Vector3 CalculateCrowdFollow(float maxSpeed)
+    {
 
-      var agentForce = Vector3.zero;
-      var speed = 0.1f;
+        var agentForce = Vector3.zero;
 
-      GetComponent<SphereCollider>().radius = 10;
+        GetComponent<SphereCollider>().radius = 8;
 
-
-      foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
-      {
         var T = Parameters.T;
-      if (path.Count == 0)
-      {
-          return Vector3.zero;
-      }
-      var temp = path[0] - transform.position;
-      var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
 
-      var neighbor = AgentManager.agentsObjs[n];
+        foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
+        {
+            if (path.Count == 0)
+            {
+                return Vector3.zero;
+            }
+            float dist = Vector3.Distance(path[0], transform.position);
+            float neighborDist = Vector3.Distance(transform.position, n.transform.position);
+            Vector3 goalDir;
+            if (dist <= neighborDist)
+            {
+                goalDir = path[0] - transform.position;
 
-      print(path[0]);
 
+            }
+            else
+            {
+                goalDir = n.transform.position - transform.position;
+            }
+            Debug.DrawRay(transform.position, goalDir, Color.red);
+            var desiredVel = goalDir.normalized * Mathf.Min(goalDir.magnitude, maxSpeed);
+            agentForce = (desiredVel - GetVelocity()) / T;
+        }
 
-      float dist = Vector3.Distance(path[0], transform.position);
+        return agentForce;
 
-      distanceDic.Add (dist, n);
-
-      //List<float> distances = distanceDic.Keys.ToList ();
-
-      //distances.Sort();
-
-      //print(distanceDic[distances [distances.Count - 1]]);
 
     }
 
 
-
-      return agentForce;
-    }
-
-
-    public Vector3 CalculateFollowLeader()
+    public Vector3 CalculateFollowLeader(float maxSpeed)
     {
         var agentForce = Vector3.zero;
         var speed = 0.1f;
@@ -158,7 +146,7 @@ public class Agent : MonoBehaviour
                 return Vector3.zero;
             }
             var temp = path[0] - transform.position;
-            var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+            var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, maxSpeed);
 
             agentForce = (desiredVel - GetVelocity()) / T;
 
@@ -171,19 +159,19 @@ public class Agent : MonoBehaviour
 
             foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
             {
-              if(!isLeader)
-              {
-                var T = Parameters.T;
-
-                //making sure agents are not too close to the leader
-                if(Vector3.Distance(leaderPosition, transform.position) > 3)
+                if (!isLeader)
                 {
-                  var temp = leaderPosition - transform.position;
-                  var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+                    var T = Parameters.T;
 
-                  agentForce = (desiredVel - GetVelocity()) / T;
+                    //making sure agents are not too close to the leader
+                    if (Vector3.Distance(leaderPosition, transform.position) > 3)
+                    {
+                        var temp = leaderPosition - transform.position;
+                        var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+
+                        agentForce = (desiredVel - GetVelocity()) / T;
+                    }
                 }
-              }
             }
         }
         return agentForce;
@@ -254,7 +242,7 @@ public class Agent : MonoBehaviour
         if (centerdir.magnitude > 0)
         {
             force += Vector3.Cross(Vector3.up, centerdir).normalized * .01f;
-            //force+=centerDir.normalized*.0075f;
+
         }
 
         return force;
@@ -271,7 +259,7 @@ public class Agent : MonoBehaviour
     private Vector3 ComputeForce()
     {
 
-        var force = CaculateCrowdFollow();
+        var force = CalculateCrowdFollow(2) + CalculateAgentForce();
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
