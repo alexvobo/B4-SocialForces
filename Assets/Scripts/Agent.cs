@@ -15,6 +15,9 @@ public class Agent : MonoBehaviour
     private Rigidbody rb;
     private Vector3 dest;
 
+    Dictionary<float, GameObject> distanceDic = new Dictionary<float, GameObject> ();
+
+
     private HashSet<GameObject> perceivedNeighbors = new HashSet<GameObject>();
     private Dictionary<GameObject, Vector3> perceivedWalls = new Dictionary<GameObject, Vector3>();
     void Start()
@@ -41,8 +44,8 @@ public class Agent : MonoBehaviour
 
             if (path.Count == 0)
             {
-                gameObject.SetActive(false);
-                AgentManager.RemoveAgent(gameObject);
+              //  gameObject.SetActive(false);
+              //  AgentManager.RemoveAgent(gameObject);
             }
         }
 
@@ -95,9 +98,45 @@ public class Agent : MonoBehaviour
         return force;
     }
 
+    //
     public Vector3 CaculateCrowdFollow() {
 
-      return Vector3.zero;
+      var agentForce = Vector3.zero;
+      var speed = 0.1f;
+
+      GetComponent<SphereCollider>().radius = 10;
+
+
+      foreach (var n in perceivedNeighbors.Where(n => AgentManager.IsAgent(n)))
+      {
+        var T = Parameters.T;
+      if (path.Count == 0)
+      {
+          return Vector3.zero;
+      }
+      var temp = path[0] - transform.position;
+      var desiredVel = temp.normalized * Mathf.Min(temp.magnitude, 1);
+
+      var neighbor = AgentManager.agentsObjs[n];
+
+      print(path[0]);
+
+
+      float dist = Vector3.Distance(path[0], transform.position);
+
+      distanceDic.Add (dist, n);
+
+      //List<float> distances = distanceDic.Keys.ToList ();
+
+      //distances.Sort();
+
+      //print(distanceDic[distances [distances.Count - 1]]);
+
+    }
+
+
+
+      return agentForce;
     }
 
 
@@ -232,7 +271,7 @@ public class Agent : MonoBehaviour
     private Vector3 ComputeForce()
     {
 
-        var force = CalculateFollowLeader();
+        var force = CaculateCrowdFollow();
         if (force != Vector3.zero)
         {
             return force.normalized * Mathf.Min(force.magnitude, Parameters.maxSpeed);
