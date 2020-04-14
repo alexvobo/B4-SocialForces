@@ -11,12 +11,12 @@ public class AgentManager : MonoBehaviour
     public GameObject agentPrefab;
     public static Dictionary<GameObject, Agent> agentsObjs = new Dictionary<GameObject, Agent>();
     public static List<Agent> leader = new List<Agent>();
-
+    public static List<Agent> evaders = new List<Agent>();
     private static List<Agent> agents = new List<Agent>();
     private GameObject agentParent;
     private Vector3 destination;
     public AgentManager instance;
-    public const float UPDATE_RATE = 0f;
+    public const float UPDATE_RATE = 0.1f;
     private const int PATHFINDING_FRAME_SKIP = 25;
 
     #region Unity Functions
@@ -38,7 +38,7 @@ public class AgentManager : MonoBehaviour
             agent.name = "Agent " + i;
             agent.transform.parent = agentParent.transform;
             var agentScript = agent.GetComponent<Agent>();
-            agentScript.radius = 0.2f;// Random.Range(0.2f, 0.6f);
+            agentScript.radius = 0.3f;// Random.Range(0.2f, 0.6f);
             agentScript.mass = 1;
             agentScript.perceptionRadius = 3;
 
@@ -48,7 +48,7 @@ public class AgentManager : MonoBehaviour
             bool isLeader = (int.Parse(agentScript.name.Split(' ')[1])) == 0;
             if (isLeader)
             {
-              leader.Add(agentScript);
+                leader.Add(agentScript);
             }
         }
 
@@ -133,16 +133,19 @@ public class AgentManager : MonoBehaviour
     {
         return agentsObjs.ContainsKey(obj);
     }
-
+    /*   public void RandomizePath()
+       {
+           SetAgentDestinations(Random.insideUnitCircle * 20);
+       }*/
     public void SetAgentDestinations(Vector3 destination)
     {
 
         NavMeshHit hit;
-        NavMesh.SamplePosition(destination, out hit, 10, NavMesh.AllAreas);
+        NavMesh.SamplePosition(destination, out hit, 150, NavMesh.AllAreas);
         foreach (var agent in agents)
         {
             agent.ComputePath(hit.position);
-            //agent.setDest(destination);
+            agent.setDest(destination);
         }
     }
 
